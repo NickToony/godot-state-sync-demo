@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://demo.gd" type="Script" id=1]
 [ext_resource path="res://box.tscn" type="PackedScene" id=2]
+[ext_resource path="res://player.tscn" type="PackedScene" id=3]
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 512, 10 )
@@ -97,6 +98,9 @@ position = Vector2( 451.068, 157.341 )
 
 [node name="box3" parent="boxes" instance=ExtResource( 2 )]
 position = Vector2( 345.669, 248.264 )
+
+[node name="Player" parent="boxes" instance=ExtResource( 3 )]
+position = Vector2( 601, 404 )
 
 [node name="walls" type="Node" parent="."]
 

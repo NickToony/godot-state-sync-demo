@@ -1,5 +1,6 @@
-extends RigidBody2D
+extends KinematicBody2D
 
+	
 const EVENT_START_DRAG = 0
 const EVENT_END_DRAG = 1
 const EVENT_DRAGGING = 2
@@ -12,63 +13,26 @@ const STATE_EXPIRATION_TIME = 1.0 / 20.0
 var dragging = false
 var host = true;
 var packet_peer = null
+var move = 0
 
 var state = null
 var state_timer = 0
 
 func _ready():
 	set_process_input(true)
-	set_can_sleep(false)
 
-func _integrate_forces(s):
-	if (not host and state != null and state_timer < STATE_EXPIRATION_TIME):
-		state_timer += s.get_step()
+func _process(_delta):
+	if (not host && state_timer < STATE_EXPIRATION_TIME):
 
 		# Apply lerp
 		var rot = slerp_rot(transform.get_rotation(), state[1], ALPHA)
 		var pos = lerp_pos(transform.get_origin(), state[0], 1.0 - ALPHA)
 
 		# Apply body transforms
-		var transform = s.get_transform().rotated(rot - get_rotation())
-		transform.origin = pos
-		s.set_linear_velocity(state[2])
-		s.set_angular_velocity(state[3])
-		s.set_transform(transform)
-
-func _input_event(_viewport, event, _shape_idx):
-	if (event is InputEventMouseButton and event.pressed):
-		dragging = true
-		start_drag()
-		broadcast(["event", "start_drag", get_name()])
-
-func _input(event):
-	if (event is InputEventMouseMotion and dragging):
-		var rect = get_tree().get_root().get_visible_rect()
-		var pos = event.position
-
-		if (pos.x <= 0 or pos.y <= 0 or pos.x >= (rect.size.x - 1) or pos.y >= (rect.size.y - 1)):
-			dragging = false
-			stop_drag()
-			broadcast(["event", "stop_drag", get_name()])
-		else:
-			drag(pos)
-			broadcast(["event", "drag", get_name(), pos])
-
-	elif (event is InputEventMouseButton and not event.pressed and dragging):
-		dragging = false
-		stop_drag()
-		broadcast(["event", "stop_drag", get_name()])
-
-func start_drag():
-	set_gravity_scale(0)
-	set_linear_velocity(Vector2(0,0))
-
-func stop_drag():
-	set_gravity_scale(1)
-	set_applied_force(Vector2(0,0))
-
-func drag(pos):
-	set_applied_force((pos - get_position()) * SCALE_FACTOR)
+		rotation = rot
+		position = pos
+		# s.set_linear_velocity(state[2])
+		# s.set_angular_velocity(state[3])
 
 func broadcast(packet):
 	if (host):
@@ -102,3 +66,22 @@ func slerp(v1, v2, alpha):
 	var angle_alpha = angle * alpha
 	var v3 = (v2 - (cos_angle * v1)).normalized()
 	return v1 * cos(angle_alpha) + v3 * sin(angle_alpha)
+
+func _physics_process(_delta):
+	move_and_slide(Vector2(move * 200, 200), Vector2(0, 1))
+
+
+func _input(ev):
+	move = 0
+	if Input.is_key_pressed(KEY_A):
+		move -= 1
+	if Input.is_key_pressed(KEY_D):
+		move += 1
+
+
+func get_linear_velocity():
+	return Vector2()
+
+func get_angular_velocity():
+	return 0
+	
